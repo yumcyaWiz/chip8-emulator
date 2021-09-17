@@ -1,3 +1,5 @@
+use crate::opcode;
+
 struct Chip8 {
     register: [u8; 16],
     index_register: u16,
