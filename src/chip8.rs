@@ -17,6 +17,21 @@ struct Chip8 {
 }
 
 impl Chip8 {
+    fn new() -> Chip8 {
+        Chip8 {
+            register: [0; 16],
+            index_register: 0,
+            program_counter: 0,
+            stack: [0; 16],
+            stack_pointer: 0,
+            memory: [0; 0x1000],
+            display: [0; 64 * 32],
+            delay_timer: 0,
+            sound_timer: 0,
+            key: [0; 16],
+        }
+    }
+
     fn read_memory(&self, address: u16) -> u8 {
         self.memory[address as usize]
     }
