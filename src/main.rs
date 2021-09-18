@@ -1,3 +1,4 @@
+mod chip8;
 mod opcode;
 
 #[macro_use]

@@ -1,5 +1,3 @@
-use crate::opcode;
-
 struct Chip8 {
     register: [u8; 16],
     index_register: u16,
@@ -52,6 +50,125 @@ impl Chip8 {
             self.program_counter += 2;
 
             // process opcode
+            match opcode & 0xF000 {
+                0x0000 => match opcode {
+                    0x00E0 => {
+                        todo!("CLS");
+                    }
+                    0x00EE => {
+                        todo!("RET");
+                    }
+                    _ => {
+                        todo!("SYS");
+                    }
+                },
+                0x1000 => {
+                    todo!("JP");
+                }
+                0x2000 => {
+                    todo!("CALL");
+                }
+                0x3000 => {
+                    todo!("SE");
+                }
+                0x4000 => {
+                    todo!("SNE");
+                }
+                0x5000 => {
+                    todo!("SE");
+                }
+                0x6000 => {
+                    todo!("LD");
+                }
+                0x7000 => {
+                    todo!("ADD");
+                }
+                0x8000 => match opcode & 0xF00F {
+                    0x8000 => {
+                        todo!("LD");
+                    }
+                    0x8001 => {
+                        todo!("OR");
+                    }
+                    0x8002 => {
+                        todo!("AND");
+                    }
+                    0x8003 => {
+                        todo!("XOR");
+                    }
+                    0x8004 => {
+                        todo!("ADD");
+                    }
+                    0x8005 => {
+                        todo!("SUB");
+                    }
+                    0x8006 => {
+                        todo!("SHR");
+                    }
+                    0x8007 => {
+                        todo!("SUBN");
+                    }
+                    0x800E => {
+                        todo!("SHL");
+                    }
+                    _ => panic!("unknown opcode: {:x}", opcode),
+                },
+                0x9000 => {
+                    todo!("SNE");
+                }
+                0xA000 => {
+                    todo!("LD");
+                }
+                0xB000 => {
+                    todo!("JP");
+                }
+                0xC000 => {
+                    todo!("RND");
+                }
+                0xD000 => {
+                    todo!("DRW");
+                }
+                0xE000 => match opcode & 0xF0FF {
+                    0xE09E => {
+                        todo!("SKP");
+                    }
+                    0xE0A1 => {
+                        todo!("SKNP");
+                    }
+                    _ => panic!("unknown opcode: {:x}", opcode),
+                },
+                0xF000 => match opcode & 0xF0FF {
+                    0xF007 => {
+                        todo!("LD");
+                    }
+                    0xF00A => {
+                        todo!("LD");
+                    }
+                    0xF015 => {
+                        todo!("LD");
+                    }
+                    0xF018 => {
+                        todo!("LD");
+                    }
+                    0xF01E => {
+                        todo!("ADD");
+                    }
+                    0xF029 => {
+                        todo!("LD");
+                    }
+                    0xF033 => {
+                        todo!("LD");
+                    }
+                    0xF055 => {
+                        todo!("LD");
+                    }
+                    0xF065 => {
+                        todo!("LD");
+                    }
+                    _ => panic!("unknown opcode: {:x}", opcode),
+                },
+                _ => panic!("unknown opcode: {:x}", opcode),
+            }
         }
     }
 }
