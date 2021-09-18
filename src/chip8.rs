@@ -1,4 +1,4 @@
-struct Chip8 {
+pub struct Chip8 {
     register: [u8; 16],
     index_register: u16,
     program_counter: u16,
@@ -17,7 +17,7 @@ struct Chip8 {
 }
 
 impl Chip8 {
-    fn new() -> Chip8 {
+    pub fn new() -> Chip8 {
         Chip8 {
             register: [0; 16],
             index_register: 0,
@@ -53,12 +53,12 @@ impl Chip8 {
         self.write_memory(address + 1, low);
     }
 
-    fn load_program(&mut self, program: Vec<u8>) {
+    pub fn load_program(&mut self, program: Vec<u8>) {
         self.memory[0x200..(0x200 + program.len())].copy_from_slice(&program[..]);
         self.program_counter = 0x200;
     }
 
-    fn run(&mut self) {
+    pub fn run(&mut self) {
         loop {
             // fetch opcode
             let opcode = self.read_memory_u16(self.program_counter);
