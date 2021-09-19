@@ -58,5 +58,5 @@ fn main() {
 
     let mut chip8 = Chip8::new();
     chip8.load_program(program);
-    chip8.run();
+    chip8.run_with_callback(move |chip8| handle_user_input(&mut event_pump));
 }
