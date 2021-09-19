@@ -1,10 +1,13 @@
+use rand::rngs::ThreadRng;
+use rand::Rng;
+
 pub struct Chip8 {
     register: [u8; 16],
     index_register: u16,
     program_counter: u16,
 
     stack: [u16; 16],
-    stack_pointer: u16,
+    stack_pointer: u8,
 
     memory: [u8; 0x1000],
 
@@ -13,7 +16,9 @@ pub struct Chip8 {
     delay_timer: u8,
     sound_timer: u8,
 
-    key: [u8; 16],
+    keyboard: [bool; 16],
+
+    rng: ThreadRng,
 }
 
 impl Chip8 {
@@ -28,8 +33,27 @@ impl Chip8 {
             display: [0; 64 * 32],
             delay_timer: 0,
             sound_timer: 0,
-            key: [0; 16],
+            keyboard: [false; 16],
+            rng: rand::thread_rng(),
         }
+    }
+
+    fn push(&mut self, value: u16) {
+        self.stack[self.stack_pointer as usize] = value;
+        self.stack_pointer += 1;
+    }
+
+    fn pop(&mut self) -> u16 {
+        self.stack_pointer -= 1;
+        self.stack[self.stack_pointer as usize]
+    }
+
+    fn read_register(&self, register_index: u8) -> u8 {
+        self.register[register_index as usize]
+    }
+
+    fn write_register(&mut self, register_index: u8, value: u8) {
+        self.register[register_index as usize] = value;
     }
 
     fn read_memory(&self, address: u16) -> u8 {
@@ -53,6 +77,10 @@ impl Chip8 {
         self.write_memory(address + 1, low);
     }
 
+    fn read_keyboard(&self, keyboard_index: u8) -> bool {
+        self.keyboard[keyboard_index as usize]
+    }
+
     pub fn load_program(&mut self, program: Vec<u8>) {
         self.memory[0x200..(0x200 + program.len())].copy_from_slice(&program[..]);
         self.program_counter = 0x200;
@@ -71,114 +99,257 @@ impl Chip8 {
                         todo!("CLS");
                     }
                     0x00EE => {
-                        todo!("RET");
+                        // RET
+                        self.program_counter = self.pop();
                     }
                     _ => {
                         todo!("SYS");
                     }
                 },
                 0x1000 => {
-                    todo!("JP");
+                    // JP addr
+                    let nnn = opcode & 0x0FFF;
+                    self.program_counter = nnn;
                 }
                 0x2000 => {
-                    todo!("CALL");
+                    // CALL addr
+                    self.push(self.program_counter);
+
+                    let nnn = opcode & 0x0FFF;
+                    self.program_counter = nnn;
                 }
                 0x3000 => {
-                    todo!("SE");
+                    // SE Vx, byte
+                    let x = (opcode & 0x0F00) as u8;
+                    let kk = (opcode & 0x00FF) as u8;
+                    if self.read_register(x) == kk {
+                        self.program_counter += 2;
+                    }
                 }
                 0x4000 => {
-                    todo!("SNE");
+                    // SNE Vx, byte
+                    let x = (opcode & 0x0F00) as u8;
+                    let kk = (opcode & 0x00FF) as u8;
+                    if self.read_register(x) != kk {
+                        self.program_counter += 2;
+                    }
                 }
                 0x5000 => {
-                    todo!("SE");
+                    match opcode & 0xF00F {
+                        0x5000 => {
+                            // SE Vx, Vy
+                            let x = (opcode & 0x0F00) as u8;
+                            let y = (opcode & 0x00F0) as u8;
+                            if self.read_register(x) == self.read_register(y) {
+                                self.program_counter += 2;
+                            }
+                        }
+                        _ => panic!("unknown opcode: {:x}", opcode),
+                    }
                 }
                 0x6000 => {
-                    todo!("LD");
+                    // LD Vx, byte
+                    let x = (opcode & 0x0F00) as u8;
+                    let kk = (opcode & 0x00FF) as u8;
+                    self.write_register(x, kk);
                 }
                 0x7000 => {
-                    todo!("ADD");
+                    // ADD Vx, byte
+                    let x = (opcode & 0x0F00) as u8;
+                    let kk = (opcode & 0x00FF) as u8;
+                    self.write_register(x, self.read_register(x) + kk);
                 }
                 0x8000 => match opcode & 0xF00F {
                     0x8000 => {
-                        todo!("LD");
+                        // LD Vx, Vy
+                        let x = (opcode & 0x0F00) as u8;
+                        let y = (opcode & 0x00F0) as u8;
+                        self.write_register(x, self.read_register(y));
                     }
                     0x8001 => {
-                        todo!("OR");
+                        // OR Vx, Vy
+                        let x = (opcode & 0x0F00) as u8;
+                        let y = (opcode & 0x00F0) as u8;
+                        self.write_register(x, self.read_register(x) | self.read_register(y));
                     }
                     0x8002 => {
-                        todo!("AND");
+                        // AND Vx, Vy
+                        let x = (opcode & 0x0F00) as u8;
+                        let y = (opcode & 0x00F0) as u8;
+                        self.write_register(x, self.read_register(x) & self.read_register(y));
                     }
                     0x8003 => {
-                        todo!("XOR");
+                        // XOR Vx, Vy
+                        let x = (opcode & 0x0F00) as u8;
+                        let y = (opcode & 0x00F0) as u8;
+                        self.write_register(x, self.read_register(x) ^ self.read_register(y));
                     }
                     0x8004 => {
-                        todo!("ADD");
+                        // ADD Vx, Vy
+                        let x = (opcode & 0x0F00) as u8;
+                        let y = (opcode & 0x00F0) as u8;
+                        self.write_register(x, self.read_register(x) + self.read_register(y));
                     }
                     0x8005 => {
-                        todo!("SUB");
+                        // SUB Vx, Vy
+                        let x = (opcode & 0x0F00) as u8;
+                        let y = (opcode & 0x00F0) as u8;
+                        self.write_register(x, self.read_register(x) - self.read_register(y));
                     }
                     0x8006 => {
-                        todo!("SHR");
+                        // SHR Vx, Vy
+                        let x = (opcode & 0x0F00) as u8;
+                        let y = (opcode & 0x00F0) as u8;
+                        self.write_register(0xF, x & 0b0000_0001);
+                        self.write_register(x, self.read_register(y) >> 1);
                     }
                     0x8007 => {
-                        todo!("SUBN");
+                        // SUBN Vx, Vy
+                        let x = (opcode & 0x0F00) as u8;
+                        let y = (opcode & 0x00F0) as u8;
+                        let vx = self.read_register(x);
+                        let vy = self.read_register(y);
+                        self.write_register(0xF, if vy > vx { 1 } else { 0 });
+                        self.write_register(x, vy - vx);
                     }
                     0x800E => {
-                        todo!("SHL");
+                        // SHL Vx, Vy
+                        let x = (opcode & 0x0F00) as u8;
+                        let y = (opcode & 0x00F0) as u8;
+                        self.write_register(0xF, x & 0b1000_0000);
+                        self.write_register(x, self.read_register(y) << 1);
                     }
                     _ => panic!("unknown opcode: {:x}", opcode),
                 },
                 0x9000 => {
-                    todo!("SNE");
+                    match opcode & 0xF00F {
+                        0x9000 => {
+                            // SNE Vx, Vy
+                            let x = (opcode & 0x0F00) as u8;
+                            let y = (opcode & 0x00F0) as u8;
+                            if self.read_register(x) != self.read_register(y) {
+                                self.program_counter += 2;
+                            }
+                        }
+                        _ => panic!("unknown opcode: {:x}", opcode),
+                    }
                 }
                 0xA000 => {
-                    todo!("LD");
+                    // LD I, addr
+                    let nnn = opcode & 0x0FFF;
+                    self.index_register = nnn;
                 }
                 0xB000 => {
-                    todo!("JP");
+                    // JP V0, addr
+                    let nnn = opcode & 0x0FFF;
+                    self.program_counter = (self.read_register(0) as u16) + nnn;
                 }
                 0xC000 => {
-                    todo!("RND");
+                    // RND Vx, byte
+                    let x = (opcode & 0x0F00) as u8;
+                    let kk = (opcode & 0x00FF) as u8;
+                    let rnd: u8 = self.rng.gen_range(0..255);
+                    self.write_register(x, rnd & kk);
                 }
                 0xD000 => {
+                    // DRW Vx, Vy, nibble
                     todo!("DRW");
                 }
                 0xE000 => match opcode & 0xF0FF {
                     0xE09E => {
-                        todo!("SKP");
+                        // SKP Vx
+                        let x = (opcode & 0x0F00) as u8;
+                        if self.read_keyboard(x) {
+                            self.program_counter += 2;
+                        }
                     }
                     0xE0A1 => {
-                        todo!("SKNP");
+                        // SKNP Vx
+                        let x = (opcode & 0x0F00) as u8;
+                        if !self.read_keyboard(x) {
+                            self.program_counter += 2;
+                        }
                     }
                     _ => panic!("unknown opcode: {:x}", opcode),
                 },
                 0xF000 => match opcode & 0xF0FF {
                     0xF007 => {
-                        todo!("LD");
+                        // LD Vx, DT
+                        let x = (opcode & 0x0F00) as u8;
+                        self.write_register(x, self.delay_timer);
                     }
                     0xF00A => {
-                        todo!("LD");
+                        // LD Vx, K
+                        let x = (opcode & 0x0F00) as u8;
+
+                        // wait until any key pressed
+                        let mut key_index = 0;
+                        loop {
+                            let mut key_pressed = false;
+                            for (index, value) in self.keyboard.iter().enumerate() {
+                                if *value {
+                                    key_index = index;
+                                    key_pressed = true;
+                                }
+                            }
+
+                            if key_pressed {
+                                break;
+                            }
+                        }
+
+                        self.write_register(x, self.keyboard[key_index] as u8);
                     }
                     0xF015 => {
-                        todo!("LD");
+                        // LD DT, Vx
+                        let x = (opcode & 0x0F00) as u8;
+                        self.delay_timer = self.read_register(x);
                     }
                     0xF018 => {
-                        todo!("LD");
+                        // LD ST, Vx
+                        let x = (opcode & 0x0F00) as u8;
+                        self.sound_timer = self.read_register(x);
                     }
                     0xF01E => {
-                        todo!("ADD");
+                        // ADD I, Vx
+                        let x = (opcode & 0x0F00) as u8;
+                        self.index_register += self.read_register(x) as u16;
                     }
                     0xF029 => {
-                        todo!("LD");
+                        todo!("LD F, Vx")
                     }
                     0xF033 => {
-                        todo!("LD");
+                        // LD B, Vx
+                        let x = (opcode & 0x0F00) as u8;
+                        let vx = self.read_register(x);
+
+                        let hundred = (vx / 100) % 10;
+                        let ten = (vx / 10) % 10;
+                        let one = vx % 10;
+
+                        self.write_memory(self.index_register, hundred);
+                        self.write_memory(self.index_register + 1, ten);
+                        self.write_memory(self.index_register + 2, one);
                     }
                     0xF055 => {
-                        todo!("LD");
+                        // LD [I], Vx
+                        let x = (opcode & 0x0F00) as u8;
+                        for i in 0..x {
+                            self.write_memory(
+                                self.index_register + (i as u16),
+                                self.read_register(i),
+                            );
+                        }
                     }
                     0xF065 => {
-                        todo!("LD");
+                        // LD Vx, [I]
+                        let x = (opcode & 0x0F00) as u8;
+                        for i in 0..x {
+                            self.write_register(
+                                i,
+                                self.read_memory(self.index_register + (i as u16)),
+                            );
+                        }
                     }
                     _ => panic!("unknown opcode: {:x}", opcode),
                 },
