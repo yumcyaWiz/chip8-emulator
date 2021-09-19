@@ -9,6 +9,8 @@ use std::io::prelude::*;
 extern crate lazy_static;
 
 fn main() {
+    env_logger::init();
+
     let mut f = File::open("test_opcode.ch8").expect("Failed to open the file");
 
     let mut program: Vec<u8> = Vec::new();
