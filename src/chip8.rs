@@ -11,7 +11,7 @@ pub struct Chip8 {
 
     memory: [u8; 0x1000],
 
-    display: [u8; 64 * 32],
+    display: [bool; 64 * 32],
 
     delay_timer: u8,
     sound_timer: u8,
@@ -30,7 +30,7 @@ impl Chip8 {
             stack: [0; 16],
             stack_pointer: 0,
             memory: [0; 0x1000],
-            display: [0; 64 * 32],
+            display: [false; 64 * 32],
             delay_timer: 0,
             sound_timer: 0,
             keyboard: [false; 16],
@@ -81,6 +81,23 @@ impl Chip8 {
         self.keyboard[keyboard_index as usize]
     }
 
+    fn read_display(&self, i: u8, j: u8) -> bool {
+        let i_warped = (i % 64) as usize;
+        let j_warped = (j % 32) as usize;
+        self.display[64 * j_warped + i_warped]
+    }
+
+    fn write_display(&mut self, i: u8, j: u8, value: bool) -> bool {
+        let i_warped = (i % 64) as usize;
+        let j_warped = (j % 32) as usize;
+
+        // XOR
+        let set_value = self.read_display(i, j) ^ value;
+        self.display[64 * j_warped + i_warped] = set_value;
+
+        set_value == false
+    }
+
     pub fn load_program(&mut self, program: Vec<u8>) {
         self.memory[0x200..(0x200 + program.len())].copy_from_slice(&program[..]);
         self.program_counter = 0x200;
@@ -96,7 +113,10 @@ impl Chip8 {
             match opcode & 0xF000 {
                 0x0000 => match opcode {
                     0x00E0 => {
-                        todo!("CLS");
+                        // CLS
+                        for v in self.display.iter_mut() {
+                            *v = false;
+                        }
                     }
                     0x00EE => {
                         // RET
@@ -253,7 +273,26 @@ impl Chip8 {
                 }
                 0xD000 => {
                     // DRW Vx, Vy, nibble
-                    todo!("DRW");
+                    let x = (opcode & 0x0F00) as u8;
+                    let y = (opcode & 0x00F0) as u8;
+                    let n = (opcode & 0x000F) as u8;
+
+                    // draw
+                    let mut erased = false;
+                    for i in 0..n {
+                        let v = self.read_memory(self.index_register + (i as u16));
+                        erased |= self.write_display(x, y + i, (v & 0b1000_0000) != 0);
+                        erased |= self.write_display(x, y + i, (v & 0b0100_0000) != 0);
+                        erased |= self.write_display(x, y + i, (v & 0b0010_0000) != 0);
+                        erased |= self.write_display(x, y + i, (v & 0b0001_0000) != 0);
+                        erased |= self.write_display(x, y + i, (v & 0b0000_1000) != 0);
+                        erased |= self.write_display(x, y + i, (v & 0b0000_0100) != 0);
+                        erased |= self.write_display(x, y + i, (v & 0b0000_0010) != 0);
+                        erased |= self.write_display(x, y + i, (v & 0b0000_0001) != 0);
+                    }
+
+                    // set VF
+                    self.write_register(0xF, if erased { 1 } else { 0 });
                 }
                 0xE000 => match opcode & 0xF0FF {
                     0xE09E => {
