@@ -105,7 +105,16 @@ impl Chip8 {
     }
 
     pub fn run(&mut self) {
+        self.run_with_callback(|_| {});
+    }
+
+    pub fn run_with_callback<F>(&mut self, mut callback: F)
+    where
+        F: FnMut(&mut Chip8),
+    {
         loop {
+            callback(self);
+
             /*
             info!(
                 "V0: {:X}, V1: {:X}, V2: {:X}, V3: {:X}, V4: {:X}, V5: {:X}, V6: {:X}, V7: {:X}, V8: {:X}, V9: {:X}, V10: {:X}, V11: {:X}, V12: {:X}, V13: {:X}, V14: {:X}, V15: {:X}",
