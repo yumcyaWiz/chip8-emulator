@@ -48,7 +48,9 @@ fn main() {
     canvas.set_scale(10.0, 10.0).unwrap();
 
     let creator = canvas.texture_creator();
-    let mut texture = creator.create_texture_target(PixelFormatEnum::RGB24, 64, 32);
+    let mut texture = creator
+        .create_texture_target(PixelFormatEnum::RGB24, 64, 32)
+        .unwrap();
 
     let mut f = File::open("test_opcode.ch8").expect("Failed to open the file");
 
@@ -58,5 +60,12 @@ fn main() {
 
     let mut chip8 = Chip8::new();
     chip8.load_program(program);
-    chip8.run_with_callback(move |chip8| handle_user_input(&mut event_pump));
+    chip8.run_with_callback(move |chip8| {
+        handle_user_input(&mut event_pump);
+
+        canvas.copy(&texture, None, None).unwrap();
+        canvas.present();
+
+        std::thread::sleep(std::time::Duration::new(0, 100_000_000));
+    });
 }
