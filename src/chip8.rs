@@ -106,6 +106,28 @@ impl Chip8 {
 
     pub fn run(&mut self) {
         loop {
+            /*
+            info!(
+                "V0: {:X}, V1: {:X}, V2: {:X}, V3: {:X}, V4: {:X}, V5: {:X}, V6: {:X}, V7: {:X}, V8: {:X}, V9: {:X}, V10: {:X}, V11: {:X}, V12: {:X}, V13: {:X}, V14: {:X}, V15: {:X}",
+                self.register[0],
+                self.register[1],
+                self.register[2],
+                self.register[3],
+                self.register[4],
+                self.register[5],
+                self.register[6],
+                self.register[7],
+                self.register[8],
+                self.register[9],
+                self.register[10],
+                self.register[11],
+                self.register[12],
+                self.register[13],
+                self.register[14],
+                self.register[15]
+            );
+            */
+
             // fetch opcode
             let current_index = self.program_counter;
             let opcode = self.read_memory_u16(self.program_counter);
@@ -192,7 +214,7 @@ impl Chip8 {
                     let kk = (opcode & 0x00FF) as u8;
                     info!("{:X}: ADD, V{}, {:X}", current_index, x, kk);
 
-                    self.write_register(x, self.read_register(x) + kk);
+                    self.write_register(x, self.read_register(x).wrapping_add(kk));
                 }
                 0x8000 => match opcode & 0xF00F {
                     0x8000 => {
