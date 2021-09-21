@@ -354,18 +354,21 @@ impl Chip8 {
                     let n = (opcode & 0x000F) as u8;
                     info!("{:X}: DRW, V{}, V{}, {:b}", program_index, x, y, n);
 
+                    let vx = self.read_register(x);
+                    let vy = self.read_register(y);
+
                     // draw
                     let mut erased = false;
                     for i in 0..n {
                         let v = self.read_memory(self.index_register + (i as u16));
-                        erased |= self.write_display(x, y + i, (v & 0b1000_0000) != 0);
-                        erased |= self.write_display(x, y + i, (v & 0b0100_0000) != 0);
-                        erased |= self.write_display(x, y + i, (v & 0b0010_0000) != 0);
-                        erased |= self.write_display(x, y + i, (v & 0b0001_0000) != 0);
-                        erased |= self.write_display(x, y + i, (v & 0b0000_1000) != 0);
-                        erased |= self.write_display(x, y + i, (v & 0b0000_0100) != 0);
-                        erased |= self.write_display(x, y + i, (v & 0b0000_0010) != 0);
-                        erased |= self.write_display(x, y + i, (v & 0b0000_0001) != 0);
+                        erased |= self.write_display(vx, vy + i, (v & 0b1000_0000) != 0);
+                        erased |= self.write_display(vx + 1, vy + i, (v & 0b0100_0000) != 0);
+                        erased |= self.write_display(vx + 2, vy + i, (v & 0b0010_0000) != 0);
+                        erased |= self.write_display(vx + 3, vy + i, (v & 0b0001_0000) != 0);
+                        erased |= self.write_display(vx + 4, vy + i, (v & 0b0000_1000) != 0);
+                        erased |= self.write_display(vx + 5, vy + i, (v & 0b0000_0100) != 0);
+                        erased |= self.write_display(vx + 6, vy + i, (v & 0b0000_0010) != 0);
+                        erased |= self.write_display(vx + 7, vy + i, (v & 0b0000_0001) != 0);
                     }
 
                     // set VF
