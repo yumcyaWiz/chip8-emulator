@@ -27,6 +27,30 @@ fn handle_user_input(event_pump: &mut EventPump) {
     }
 }
 
+fn color(b: bool) -> Color {
+    match b {
+        true => sdl2::pixels::Color::WHITE,
+        false => sdl2::pixels::Color::BLACK,
+    }
+}
+
+fn read_screen_state(chip8: &Chip8, screen_state: &mut [u8; 64 * 32 * 3]) -> bool {
+    let mut idx = 0;
+    let mut update = false;
+    for i in 0..(64 * 32) {
+        let b = chip8.display[i];
+        let (r, g, b) = color(b).rgb();
+        if screen_state[idx] != r || screen_state[idx + 1] != g || screen_state[idx + 2] != b {
+            screen_state[idx] = r;
+            screen_state[idx + 1] = g;
+            screen_state[idx + 2] = b;
+            update = true
+        }
+        idx += 3;
+    }
+    update
+}
+
 fn main() {
     env_logger::init();
 
@@ -52,6 +76,8 @@ fn main() {
         .create_texture_target(PixelFormatEnum::RGB24, 64, 32)
         .unwrap();
 
+    let mut screen_state = [0 as u8; 64 * 32 * 3];
+
     let mut f = File::open("test_opcode.ch8").expect("Failed to open the file");
 
     let mut program: Vec<u8> = Vec::new();
@@ -63,8 +89,11 @@ fn main() {
     chip8.run_with_callback(move |chip8| {
         handle_user_input(&mut event_pump);
 
-        canvas.copy(&texture, None, None).unwrap();
-        canvas.present();
+        if read_screen_state(chip8, &mut screen_state) {
+            texture.update(None, &screen_state, 64 * 3).unwrap();
+            canvas.copy(&texture, None, None).unwrap();
+            canvas.present();
+        }
 
         std::thread::sleep(std::time::Duration::new(0, 100_000_000));
     });
