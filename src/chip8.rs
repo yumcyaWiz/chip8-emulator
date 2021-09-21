@@ -270,7 +270,10 @@ impl Chip8 {
                         let y = ((opcode & 0x00F0) >> 4) as u8;
                         info!("{:X}: ADD, V{}, V{}", program_index, x, y);
 
-                        self.write_register(x, self.read_register(x) + self.read_register(y));
+                        self.write_register(
+                            x,
+                            self.read_register(x).wrapping_add(self.read_register(y)),
+                        );
                     }
                     0x8005 => {
                         // SUB Vx, Vy
@@ -278,7 +281,10 @@ impl Chip8 {
                         let y = ((opcode & 0x00F0) >> 4) as u8;
                         info!("{:X}: SUB, V{}, V{}", program_index, x, y);
 
-                        self.write_register(x, self.read_register(x) - self.read_register(y));
+                        self.write_register(
+                            x,
+                            self.read_register(x).wrapping_sub(self.read_register(y)),
+                        );
                     }
                     0x8006 => {
                         // SHR Vx, Vy
@@ -298,7 +304,7 @@ impl Chip8 {
                         info!("{:X}: SUBN, V{}, V{}", program_index, x, y);
 
                         self.write_register(0xF, if vy > vx { 1 } else { 0 });
-                        self.write_register(x, vy - vx);
+                        self.write_register(x, vy.wrapping_sub(vx));
                     }
                     0x800E => {
                         // SHL Vx, Vy
