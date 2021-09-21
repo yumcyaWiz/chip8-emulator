@@ -142,6 +142,8 @@ impl Chip8 {
             let opcode = self.read_memory_u16(self.program_counter);
             self.program_counter += 2;
 
+            info!("opcode: {:X}", opcode);
+
             // process opcode
             match opcode & 0xF000 {
                 0x0000 => match opcode {
@@ -180,7 +182,7 @@ impl Chip8 {
                 }
                 0x3000 => {
                     // SE Vx, byte
-                    let x = (opcode & 0x0F00 >> 8) as u8;
+                    let x = ((opcode & 0x0F00) >> 8) as u8;
                     let kk = (opcode & 0x00FF) as u8;
                     info!("{:X}: SE, V{} {:X}", program_index, x, kk);
 
@@ -190,7 +192,7 @@ impl Chip8 {
                 }
                 0x4000 => {
                     // SNE Vx, byte
-                    let x = (opcode & 0x0F00 >> 8) as u8;
+                    let x = ((opcode & 0x0F00) >> 8) as u8;
                     let kk = (opcode & 0x00FF) as u8;
                     info!("{:X}: SNE, V{} {:X}", program_index, x, kk);
 
@@ -202,8 +204,8 @@ impl Chip8 {
                     match opcode & 0xF00F {
                         0x5000 => {
                             // SE Vx, Vy
-                            let x = (opcode & 0x0F00 >> 8) as u8;
-                            let y = (opcode & 0x00F0 >> 4) as u8;
+                            let x = ((opcode & 0x0F00) >> 8) as u8;
+                            let y = ((opcode & 0x00F0) >> 4) as u8;
                             info!("{:X}: SE, V{} V{}", program_index, x, y);
 
                             if self.read_register(x) == self.read_register(y) {
@@ -215,7 +217,7 @@ impl Chip8 {
                 }
                 0x6000 => {
                     // LD Vx, byte
-                    let x = (opcode & 0x0F00 >> 8) as u8;
+                    let x = ((opcode & 0x0F00) >> 8) as u8;
                     let kk = (opcode & 0x00FF) as u8;
                     info!("{:X}: LD, V{}, {:X}", program_index, x, kk);
 
@@ -223,7 +225,7 @@ impl Chip8 {
                 }
                 0x7000 => {
                     // ADD Vx, byte
-                    let x = (opcode & 0x0F00 >> 8) as u8;
+                    let x = ((opcode & 0x0F00) >> 8) as u8;
                     let kk = (opcode & 0x00FF) as u8;
                     info!("{:X}: ADD, V{}, {:X}", program_index, x, kk);
 
@@ -232,56 +234,56 @@ impl Chip8 {
                 0x8000 => match opcode & 0xF00F {
                     0x8000 => {
                         // LD Vx, Vy
-                        let x = (opcode & 0x0F00 >> 8) as u8;
-                        let y = (opcode & 0x00F0 >> 4) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
+                        let y = ((opcode & 0x00F0) >> 4) as u8;
                         info!("{:X}: LD, V{}, V{}", program_index, x, y);
 
                         self.write_register(x, self.read_register(y));
                     }
                     0x8001 => {
                         // OR Vx, Vy
-                        let x = (opcode & 0x0F00 >> 8) as u8;
-                        let y = (opcode & 0x00F0 >> 4) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
+                        let y = ((opcode & 0x00F0) >> 4) as u8;
                         info!("{:X}: OR, V{}, V{}", program_index, x, y);
 
                         self.write_register(x, self.read_register(x) | self.read_register(y));
                     }
                     0x8002 => {
                         // AND Vx, Vy
-                        let x = (opcode & 0x0F00 >> 8) as u8;
-                        let y = (opcode & 0x00F0 >> 4) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
+                        let y = ((opcode & 0x00F0) >> 4) as u8;
                         info!("{:X}: AND, V{}, V{}", program_index, x, y);
 
                         self.write_register(x, self.read_register(x) & self.read_register(y));
                     }
                     0x8003 => {
                         // XOR Vx, Vy
-                        let x = (opcode & 0x0F00 >> 8) as u8;
-                        let y = (opcode & 0x00F0 >> 4) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
+                        let y = ((opcode & 0x00F0) >> 4) as u8;
                         info!("{:X}: XOR, V{}, V{}", program_index, x, y);
 
                         self.write_register(x, self.read_register(x) ^ self.read_register(y));
                     }
                     0x8004 => {
                         // ADD Vx, Vy
-                        let x = (opcode & 0x0F00 >> 8) as u8;
-                        let y = (opcode & 0x00F0 >> 4) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
+                        let y = ((opcode & 0x00F0) >> 4) as u8;
                         info!("{:X}: ADD, V{}, V{}", program_index, x, y);
 
                         self.write_register(x, self.read_register(x) + self.read_register(y));
                     }
                     0x8005 => {
                         // SUB Vx, Vy
-                        let x = (opcode & 0x0F00 >> 8) as u8;
-                        let y = (opcode & 0x00F0 >> 4) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
+                        let y = ((opcode & 0x00F0) >> 4) as u8;
                         info!("{:X}: SUB, V{}, V{}", program_index, x, y);
 
                         self.write_register(x, self.read_register(x) - self.read_register(y));
                     }
                     0x8006 => {
                         // SHR Vx, Vy
-                        let x = (opcode & 0x0F00 >> 8) as u8;
-                        let y = (opcode & 0x00F0 >> 4) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
+                        let y = ((opcode & 0x00F0) >> 4) as u8;
                         info!("{:X}: SHR, V{}, V{}", program_index, x, y);
 
                         self.write_register(0xF, x & 0b0000_0001);
@@ -289,8 +291,8 @@ impl Chip8 {
                     }
                     0x8007 => {
                         // SUBN Vx, Vy
-                        let x = (opcode & 0x0F00 >> 8) as u8;
-                        let y = (opcode & 0x00F0 >> 4) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
+                        let y = ((opcode & 0x00F0) >> 4) as u8;
                         let vx = self.read_register(x);
                         let vy = self.read_register(y);
                         info!("{:X}: SUBN, V{}, V{}", program_index, x, y);
@@ -300,8 +302,8 @@ impl Chip8 {
                     }
                     0x800E => {
                         // SHL Vx, Vy
-                        let x = (opcode & 0x0F00 >> 8) as u8;
-                        let y = (opcode & 0x00F0 >> 4) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
+                        let y = ((opcode & 0x00F0) >> 4) as u8;
                         info!("{:X}: SHL, V{}, V{}", program_index, x, y);
 
                         self.write_register(0xF, x & 0b1000_0000);
@@ -313,8 +315,8 @@ impl Chip8 {
                     match opcode & 0xF00F {
                         0x9000 => {
                             // SNE Vx, Vy
-                            let x = (opcode & 0x0F00 >> 8) as u8;
-                            let y = (opcode & 0x00F0 >> 4) as u8;
+                            let x = ((opcode & 0x0F00) >> 8) as u8;
+                            let y = ((opcode & 0x00F0) >> 4) as u8;
                             info!("{:X}: SNE, V{}, V{}", program_index, x, y);
 
                             if self.read_register(x) != self.read_register(y) {
@@ -340,7 +342,7 @@ impl Chip8 {
                 }
                 0xC000 => {
                     // RND Vx, byte
-                    let x = (opcode & 0x0F00 >> 8) as u8;
+                    let x = ((opcode & 0x0F00) >> 8) as u8;
                     let kk = (opcode & 0x00FF) as u8;
                     info!("{:X}: RND, V{}, {:X}", program_index, x, kk);
 
@@ -349,8 +351,8 @@ impl Chip8 {
                 }
                 0xD000 => {
                     // DRW Vx, Vy, nibble
-                    let x = (opcode & 0x0F00 >> 8) as u8;
-                    let y = (opcode & 0x00F0 >> 4) as u8;
+                    let x = ((opcode & 0x0F00) >> 8) as u8;
+                    let y = ((opcode & 0x00F0) >> 4) as u8;
                     let n = (opcode & 0x000F) as u8;
                     info!("{:X}: DRW, V{}, V{}, {:b}", program_index, x, y, n);
 
@@ -377,7 +379,7 @@ impl Chip8 {
                 0xE000 => match opcode & 0xF0FF {
                     0xE09E => {
                         // SKP Vx
-                        let x = (opcode & 0x0F00 >> 8) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!("{:X}: SKP, V{}", program_index, x);
 
                         if self.read_keyboard(x) {
@@ -386,7 +388,7 @@ impl Chip8 {
                     }
                     0xE0A1 => {
                         // SKNP Vx
-                        let x = (opcode & 0x0F00 >> 8) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!("{:X}: SKNP, V{}", program_index, x);
 
                         if !self.read_keyboard(x) {
@@ -398,14 +400,14 @@ impl Chip8 {
                 0xF000 => match opcode & 0xF0FF {
                     0xF007 => {
                         // LD Vx, DT
-                        let x = (opcode & 0x0F00 >> 8) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!("{:X}: LD, V{}, DT", program_index, x);
 
                         self.write_register(x, self.delay_timer);
                     }
                     0xF00A => {
                         // LD Vx, K
-                        let x = (opcode & 0x0F00 >> 8) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!("{:X}: LD, V{}, K", program_index, x);
 
                         // wait until any key pressed
@@ -428,21 +430,21 @@ impl Chip8 {
                     }
                     0xF015 => {
                         // LD DT, Vx
-                        let x = (opcode & 0x0F00 >> 8) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!("{:X}: LD, DT, V{}", program_index, x);
 
                         self.delay_timer = self.read_register(x);
                     }
                     0xF018 => {
                         // LD ST, Vx
-                        let x = (opcode & 0x0F00 >> 8) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!("{:X}: LD, ST, V{}", program_index, x);
 
                         self.sound_timer = self.read_register(x);
                     }
                     0xF01E => {
                         // ADD I, Vx
-                        let x = (opcode & 0x0F00 >> 8) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!(
                             "{:X}: ADD, {:X}, V{}",
                             program_index, self.index_register, x
@@ -455,7 +457,7 @@ impl Chip8 {
                     }
                     0xF033 => {
                         // LD B, Vx
-                        let x = (opcode & 0x0F00 >> 8) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!("{:X}: LD, B, V{}", program_index, x);
 
                         let vx = self.read_register(x);
@@ -469,7 +471,7 @@ impl Chip8 {
                     }
                     0xF055 => {
                         // LD [I], Vx
-                        let x = (opcode & 0x0F00 >> 8) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!(
                             "{:X}: LD, [{:X}], V{}",
                             program_index, self.index_register, x
@@ -484,7 +486,7 @@ impl Chip8 {
                     }
                     0xF065 => {
                         // LD Vx, [I]
-                        let x = (opcode & 0x0F00 >> 8) as u8;
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!(
                             "{:X}: LD, V{}, [{:X}]",
                             program_index, x, self.index_register
