@@ -478,32 +478,34 @@ impl Chip8 {
                     0xF055 => {
                         // LD [I], Vx
                         let x = ((opcode & 0x0F00) >> 8) as u8;
-                        info!(
-                            "{:X}: LD, [{:X}], V{}",
-                            program_index, self.index_register, x
-                        );
+                        info!("{:X}: LD, [I], V{}", program_index, x);
 
-                        for i in 0..x {
+                        // set register values on memory
+                        for i in 0..(x + 1) {
                             self.write_memory(
                                 self.index_register + (i as u16),
                                 self.read_register(i),
                             );
                         }
+
+                        // set IP
+                        self.index_register += (x + 1) as u16;
                     }
                     0xF065 => {
                         // LD Vx, [I]
                         let x = ((opcode & 0x0F00) >> 8) as u8;
-                        info!(
-                            "{:X}: LD, V{}, [{:X}]",
-                            program_index, x, self.index_register
-                        );
+                        info!("{:X}: LD, V{}, [I]", program_index, x);
 
-                        for i in 0..x {
+                        // load values into registers
+                        for i in 0..(x + 1) {
                             self.write_register(
                                 i,
                                 self.read_memory(self.index_register + (i as u16)),
                             );
                         }
+
+                        // set IP
+                        self.index_register += (x + 1) as u16;
                     }
                     _ => panic!("unknown opcode: {:X}", opcode),
                 },
