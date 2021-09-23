@@ -484,7 +484,11 @@ impl Chip8 {
                         self.index_register += self.read_register(x) as u16;
                     }
                     0xF029 => {
-                        todo!("LD F, Vx")
+                        let x = ((opcode & 0x0F00) >> 8) as u8;
+                        info!("{:X}: LD, F, V{}", program_index, x);
+
+                        let vx = self.read_register(x) as u16;
+                        self.index_register = 5 * vx;
                     }
                     0xF033 => {
                         // LD B, Vx
