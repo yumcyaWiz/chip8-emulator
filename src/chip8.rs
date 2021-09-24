@@ -451,7 +451,7 @@ impl Chip8 {
                         }
 
                         if key_pressed {
-                            self.write_register(x, self.keyboard[key_index] as u8);
+                            self.write_register(x, key_index as u8);
                         } else {
                             // wait until any key pressed
                             // NOTE: since keyboard input is handled outside this struct, we simulate waiting behavior by moving program counter back
