@@ -441,23 +441,22 @@ impl Chip8 {
                         let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!("{:X}: LD, V{}, K", program_index, x);
 
-                        // wait until any key pressed
                         let mut key_index = 0;
-                        loop {
-                            let mut key_pressed = false;
-                            for (index, value) in self.keyboard.iter().enumerate() {
-                                if *value {
-                                    key_index = index;
-                                    key_pressed = true;
-                                }
-                            }
-
-                            if key_pressed {
-                                break;
+                        let mut key_pressed = false;
+                        for (index, value) in self.keyboard.iter().enumerate() {
+                            if *value {
+                                key_index = index;
+                                key_pressed = true;
                             }
                         }
 
-                        self.write_register(x, self.keyboard[key_index] as u8);
+                        if key_pressed {
+                            self.write_register(x, self.keyboard[key_index] as u8);
+                        } else {
+                            // wait until any key pressed
+                            // NOTE: since keyboard input is handled outside this struct, we simulate waiting behavior by moving program counter back
+                            self.program_counter -= 2;
+                        }
                     }
                     0xF015 => {
                         // LD DT, Vx
