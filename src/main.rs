@@ -14,7 +14,15 @@ use sdl2::EventPump;
 #[macro_use]
 extern crate lazy_static;
 
-fn handle_user_input(event_pump: &mut EventPump) {
+fn reset_keyboard(chip8: &mut Chip8) {
+    for value in chip8.keyboard.iter_mut() {
+        *value = false;
+    }
+}
+
+fn handle_user_input(chip8: &mut Chip8, event_pump: &mut EventPump) {
+    reset_keyboard(chip8);
+
     for event in event_pump.poll_iter() {
         match event {
             Event::Quit { .. }
@@ -22,6 +30,70 @@ fn handle_user_input(event_pump: &mut EventPump) {
                 keycode: Some(Keycode::Escape),
                 ..
             } => std::process::exit(0),
+            Event::KeyDown {
+                keycode: Some(Keycode::Num1),
+                ..
+            } => chip8.keyboard[0x1] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::Num2),
+                ..
+            } => chip8.keyboard[0x2] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::Num3),
+                ..
+            } => chip8.keyboard[0x3] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::Num4),
+                ..
+            } => chip8.keyboard[0xC] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::Q),
+                ..
+            } => chip8.keyboard[0x4] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::W),
+                ..
+            } => chip8.keyboard[0x5] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::E),
+                ..
+            } => chip8.keyboard[0x6] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::R),
+                ..
+            } => chip8.keyboard[0xD] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::A),
+                ..
+            } => chip8.keyboard[0x7] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::S),
+                ..
+            } => chip8.keyboard[0x8] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::D),
+                ..
+            } => chip8.keyboard[0x9] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::F),
+                ..
+            } => chip8.keyboard[0xE] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::Z),
+                ..
+            } => chip8.keyboard[0xA] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::X),
+                ..
+            } => chip8.keyboard[0x0] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::C),
+                ..
+            } => chip8.keyboard[0xB] = true,
+            Event::KeyDown {
+                keycode: Some(Keycode::V),
+                ..
+            } => chip8.keyboard[0xF] = true,
             _ => (),
         }
     }
@@ -29,11 +101,12 @@ fn handle_user_input(event_pump: &mut EventPump) {
 
 fn color(b: bool) -> Color {
     match b {
-        true => sdl2::pixels::Color::WHITE,
+        true => sdl2::pixels::Color::RGB(0, 200, 0),
         false => sdl2::pixels::Color::BLACK,
     }
 }
 
+// read screen from chip8, coloring, if pixel changed, update screen state
 fn read_screen_state(chip8: &Chip8, screen_state: &mut [u8; 64 * 32 * 3]) -> bool {
     let mut idx = 0;
     let mut update = false;
@@ -78,7 +151,7 @@ fn main() {
 
     let mut screen_state = [0 as u8; 64 * 32 * 3];
 
-    let mut f = File::open("test_opcode.ch8").expect("Failed to open the file");
+    let mut f = File::open("random_number_test.ch8").expect("Failed to open the file");
 
     let mut program: Vec<u8> = Vec::new();
     f.read_to_end(&mut program)
@@ -87,7 +160,7 @@ fn main() {
     let mut chip8 = Chip8::new();
     chip8.load_program(program);
     chip8.run_with_callback(move |chip8| {
-        handle_user_input(&mut event_pump);
+        handle_user_input(chip8, &mut event_pump);
 
         if read_screen_state(chip8, &mut screen_state) {
             texture.update(None, &screen_state, 64 * 3).unwrap();
@@ -95,6 +168,6 @@ fn main() {
             canvas.present();
         }
 
-        std::thread::sleep(std::time::Duration::new(0, 100_000_000));
+        std::thread::sleep(std::time::Duration::new(0, 10_000_000));
     });
 }

@@ -38,7 +38,7 @@ pub struct Chip8 {
     delay_timer: u8,
     sound_timer: u8,
 
-    keyboard: [bool; 16],
+    pub keyboard: [bool; 16],
 
     rng: ThreadRng,
 }
