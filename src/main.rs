@@ -1,5 +1,4 @@
 mod chip8;
-mod opcode;
 
 use chip8::Chip8;
 use std::fs::File;
