@@ -423,7 +423,8 @@ impl Chip8 {
                         let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!("{:X}: SKP, V{}", program_index, x);
 
-                        if self.read_keyboard(x) {
+                        let vx = self.read_register(x);
+                        if self.read_keyboard(vx) {
                             self.program_counter += 2;
                         }
                     }
@@ -432,7 +433,8 @@ impl Chip8 {
                         let x = ((opcode & 0x0F00) >> 8) as u8;
                         info!("{:X}: SKNP, V{}", program_index, x);
 
-                        if !self.read_keyboard(x) {
+                        let vx = self.read_register(x);
+                        if !self.read_keyboard(vx) {
                             self.program_counter += 2;
                         }
                     }
