@@ -151,7 +151,7 @@ fn main() {
 
     let mut screen_state = [0 as u8; 64 * 32 * 3];
 
-    let mut f = File::open("random_number_test.ch8").expect("Failed to open the file");
+    let mut f = File::open("delay_timer_test.ch8").expect("Failed to open the file");
 
     let mut program: Vec<u8> = Vec::new();
     f.read_to_end(&mut program)
@@ -167,7 +167,5 @@ fn main() {
             canvas.copy(&texture, None, None).unwrap();
             canvas.present();
         }
-
-        std::thread::sleep(std::time::Duration::new(0, 10_000_000));
     });
 }
