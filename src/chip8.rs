@@ -39,8 +39,6 @@ pub struct Chip8 {
     sound_timer: u8,
 
     pub keyboard: [bool; 16],
-
-    rng: ThreadRng,
 }
 
 impl Chip8 {
@@ -56,7 +54,6 @@ impl Chip8 {
             delay_timer: 0,
             sound_timer: 0,
             keyboard: [false; 16],
-            rng: rand::thread_rng(),
         }
     }
 
@@ -137,6 +134,9 @@ impl Chip8 {
     where
         F: FnMut(&mut Chip8),
     {
+        // initialize RNG
+        let mut rng = rand::thread_rng();
+
         loop {
             callback(self);
 
@@ -377,7 +377,7 @@ impl Chip8 {
                     let kk = (opcode & 0x00FF) as u8;
                     info!("{:X}: RND, V{}, {:X}", program_index, x, kk);
 
-                    let rnd: u8 = self.rng.gen_range(0..255);
+                    let rnd: u8 = rng.gen_range(0..255);
                     self.write_register(x, rnd & kk);
                 }
                 0xD000 => {
