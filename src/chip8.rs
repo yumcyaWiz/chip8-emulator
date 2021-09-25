@@ -111,10 +111,12 @@ impl Chip8 {
         let j_warped = (j % 32) as usize;
 
         // XOR
-        let set_value = self.read_display(i, j) ^ value;
-        self.display[64 * j_warped + i_warped] = set_value;
+        let prev_value = self.read_display(i, j);
+        let next_value = prev_value ^ value;
+        self.display[64 * j_warped + i_warped] = next_value;
 
-        set_value == false
+        // is erased?
+        prev_value == true && next_value == false
     }
 
     pub fn load_program(&mut self, program: Vec<u8>) {
@@ -144,34 +146,38 @@ impl Chip8 {
         loop {
             callback(self);
 
-            /*
-            info!(
-                "V0: {:X}, V1: {:X}, V2: {:X}, V3: {:X}, V4: {:X}, V5: {:X}, V6: {:X}, V7: {:X}, V8: {:X}, V9: {:X}, V10: {:X}, V11: {:X}, V12: {:X}, V13: {:X}, V14: {:X}, V15: {:X}",
-                self.register[0],
-                self.register[1],
-                self.register[2],
-                self.register[3],
-                self.register[4],
-                self.register[5],
-                self.register[6],
-                self.register[7],
-                self.register[8],
-                self.register[9],
-                self.register[10],
-                self.register[11],
-                self.register[12],
-                self.register[13],
-                self.register[14],
-                self.register[15]
-            );
-            */
+            self.keyboard[0x2] = true;
+
+            // process delay timer
+            // NOTE: timer running at 60hz
+            if self.delay_timer == 0 {
+                delay_timer_counter = std::time::Instant::now();
+            }
+
+            if self.delay_timer > 0
+                && delay_timer_counter.elapsed() >= std::time::Duration::from_secs_f32(1.0 / 60.0)
+            {
+                self.delay_timer -= 1;
+                delay_timer_counter = std::time::Instant::now();
+            }
+
+            // process sound timer
+            // NOTE: timer running at 60hz
+            if self.sound_timer == 0 {
+                sound_timer_counter = std::time::Instant::now();
+            }
+            if self.sound_timer > 0 {
+                // todo!("beep");
+                if sound_timer_counter.elapsed() >= std::time::Duration::from_secs_f32(1.0 / 60.0) {
+                    self.sound_timer -= 1;
+                    sound_timer_counter = std::time::Instant::now();
+                }
+            }
 
             // fetch opcode
             let program_index = self.program_counter;
             let opcode = self.read_memory_u16(self.program_counter);
             self.program_counter += 2;
-
-            // info!("opcode: {:X}", opcode);
 
             // process opcode
             match opcode & 0xF000 {
@@ -544,31 +550,7 @@ impl Chip8 {
                 _ => panic!("unknown opcode: {:X}", opcode),
             }
 
-            // process delay timer
-            // NOTE: timer running at 60hz
-            if self.delay_timer == 0 {
-                delay_timer_counter = std::time::Instant::now();
-            }
-
-            if self.delay_timer > 0
-                && delay_timer_counter.elapsed() >= std::time::Duration::from_secs_f32(1.0 / 60.0)
-            {
-                self.delay_timer -= 1;
-                delay_timer_counter = std::time::Instant::now();
-            }
-
-            // process sound timer
-            // NOTE: timer running at 60hz
-            if self.sound_timer == 0 {
-                sound_timer_counter = std::time::Instant::now();
-            }
-            if self.sound_timer > 0 {
-                // todo!("beep");
-                if sound_timer_counter.elapsed() >= std::time::Duration::from_secs_f32(1.0 / 60.0) {
-                    self.sound_timer -= 1;
-                    sound_timer_counter = std::time::Instant::now();
-                }
-            }
+            // std::thread::sleep(std::time::Duration::from_millis(10));
         }
     }
 }
