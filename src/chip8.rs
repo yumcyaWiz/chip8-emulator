@@ -146,34 +146,6 @@ impl Chip8 {
         loop {
             callback(self);
 
-            self.keyboard[0x2] = true;
-
-            // process delay timer
-            // NOTE: timer running at 60hz
-            if self.delay_timer == 0 {
-                delay_timer_counter = std::time::Instant::now();
-            }
-
-            if self.delay_timer > 0
-                && delay_timer_counter.elapsed() >= std::time::Duration::from_secs_f32(1.0 / 60.0)
-            {
-                self.delay_timer -= 1;
-                delay_timer_counter = std::time::Instant::now();
-            }
-
-            // process sound timer
-            // NOTE: timer running at 60hz
-            if self.sound_timer == 0 {
-                sound_timer_counter = std::time::Instant::now();
-            }
-            if self.sound_timer > 0 {
-                // todo!("beep");
-                if sound_timer_counter.elapsed() >= std::time::Duration::from_secs_f32(1.0 / 60.0) {
-                    self.sound_timer -= 1;
-                    sound_timer_counter = std::time::Instant::now();
-                }
-            }
-
             // fetch opcode
             let program_index = self.program_counter;
             let opcode = self.read_memory_u16(self.program_counter);
@@ -550,6 +522,32 @@ impl Chip8 {
                     _ => panic!("unknown opcode: {:X}", opcode),
                 },
                 _ => panic!("unknown opcode: {:X}", opcode),
+            }
+
+            // process delay timer
+            // NOTE: timer running at 60hz
+            if self.delay_timer == 0 {
+                delay_timer_counter = std::time::Instant::now();
+            }
+
+            if self.delay_timer > 0
+                && delay_timer_counter.elapsed() >= std::time::Duration::from_secs_f32(1.0 / 60.0)
+            {
+                self.delay_timer -= 1;
+                delay_timer_counter = std::time::Instant::now();
+            }
+
+            // process sound timer
+            // NOTE: timer running at 60hz
+            if self.sound_timer == 0 {
+                sound_timer_counter = std::time::Instant::now();
+            }
+            if self.sound_timer > 0 {
+                // todo!("beep");
+                if sound_timer_counter.elapsed() >= std::time::Duration::from_secs_f32(1.0 / 60.0) {
+                    self.sound_timer -= 1;
+                    sound_timer_counter = std::time::Instant::now();
+                }
             }
 
             // std::thread::sleep(std::time::Duration::from_millis(10));
