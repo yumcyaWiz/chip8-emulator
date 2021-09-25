@@ -1,5 +1,4 @@
 use log::info;
-use rand::rngs::ThreadRng;
 use rand::Rng;
 
 lazy_static! {
