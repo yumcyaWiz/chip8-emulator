@@ -563,7 +563,7 @@ impl Chip8 {
                 sound_timer_counter = std::time::Instant::now();
             }
             if self.sound_timer > 0 {
-                todo!("beep");
+                // todo!("beep");
                 if sound_timer_counter.elapsed() >= std::time::Duration::from_secs_f32(1.0 / 60.0) {
                     self.sound_timer -= 1;
                     sound_timer_counter = std::time::Instant::now();
