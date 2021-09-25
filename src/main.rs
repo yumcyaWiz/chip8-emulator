@@ -14,15 +14,7 @@ use sdl2::EventPump;
 #[macro_use]
 extern crate lazy_static;
 
-fn reset_keyboard(chip8: &mut Chip8) {
-    for value in chip8.keyboard.iter_mut() {
-        *value = false;
-    }
-}
-
 fn handle_user_input(chip8: &mut Chip8, event_pump: &mut EventPump) {
-    reset_keyboard(chip8);
-
     for event in event_pump.poll_iter() {
         match event {
             Event::Quit { .. }
@@ -30,70 +22,168 @@ fn handle_user_input(chip8: &mut Chip8, event_pump: &mut EventPump) {
                 keycode: Some(Keycode::Escape),
                 ..
             } => std::process::exit(0),
+
             Event::KeyDown {
                 keycode: Some(Keycode::Num1),
                 ..
             } => chip8.keyboard[0x1] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::Num1),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0x1] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::Num2),
+                repeat: false,
                 ..
             } => chip8.keyboard[0x2] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::Num2),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0x2] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::Num3),
                 ..
             } => chip8.keyboard[0x3] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::Num3),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0x3] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::Num4),
                 ..
             } => chip8.keyboard[0xC] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::Num4),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0xC] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::Q),
                 ..
             } => chip8.keyboard[0x4] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::Q),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0x4] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::W),
                 ..
             } => chip8.keyboard[0x5] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::W),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0x5] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::E),
                 ..
             } => chip8.keyboard[0x6] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::E),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0x6] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::R),
                 ..
             } => chip8.keyboard[0xD] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::R),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0xD] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::A),
                 ..
             } => chip8.keyboard[0x7] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::A),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0x7] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::S),
                 ..
             } => chip8.keyboard[0x8] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::S),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0x8] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::D),
                 ..
             } => chip8.keyboard[0x9] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::D),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0x9] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::F),
                 ..
             } => chip8.keyboard[0xE] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::F),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0xE] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::Z),
                 ..
             } => chip8.keyboard[0xA] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::Z),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0xA] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::X),
                 ..
             } => chip8.keyboard[0x0] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::X),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0x0] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::C),
                 ..
             } => chip8.keyboard[0xB] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::C),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0xB] = false,
+
             Event::KeyDown {
                 keycode: Some(Keycode::V),
                 ..
             } => chip8.keyboard[0xF] = true,
+            Event::KeyUp {
+                keycode: Some(Keycode::V),
+                repeat: false,
+                ..
+            } => chip8.keyboard[0xF] = false,
+
             _ => (),
         }
     }
@@ -151,7 +241,7 @@ fn main() {
 
     let mut screen_state = [0 as u8; 64 * 32 * 3];
 
-    let mut f = File::open("delay_timer_test.ch8").expect("Failed to open the file");
+    let mut f = File::open("cavern.ch8").expect("Failed to open the file");
 
     let mut program: Vec<u8> = Vec::new();
     f.read_to_end(&mut program)
