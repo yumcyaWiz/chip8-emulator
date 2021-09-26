@@ -115,7 +115,7 @@ impl Chip8 {
         self.display[64 * j_warped + i_warped] = next_value;
 
         // is erased?
-        prev_value == true && next_value == false
+        !next_value
     }
 
     pub fn load_program(&mut self, program: Vec<u8>) {

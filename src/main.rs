@@ -238,9 +238,9 @@ fn main() {
         .create_texture_target(PixelFormatEnum::RGB24, 64, 32)
         .unwrap();
 
-    let mut screen_state = [0 as u8; 64 * 32 * 3];
+    let mut screen_state = [0_u8; 64 * 32 * 3];
 
-    let mut f = File::open("cavern.ch8").expect("Failed to open the file");
+    let mut f = File::open("Life [GV Samways, 1980].ch8").expect("Failed to open the file");
 
     let mut program: Vec<u8> = Vec::new();
     f.read_to_end(&mut program)
