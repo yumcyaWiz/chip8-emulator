@@ -1,6 +1,7 @@
 mod chip8;
 
 use chip8::Chip8;
+
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -10,8 +11,16 @@ use sdl2::pixels::Color;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::EventPump;
 
+use clap::{AppSettings, Clap};
+
 #[macro_use]
 extern crate lazy_static;
+
+#[derive(Clap)]
+#[clap(setting = AppSettings::ColoredHelp)]
+struct Opts {
+    filepath: String,
+}
 
 fn handle_user_input(chip8: &mut Chip8, event_pump: &mut EventPump) {
     for event in event_pump.poll_iter() {
@@ -190,7 +199,7 @@ fn handle_user_input(chip8: &mut Chip8, event_pump: &mut EventPump) {
 
 fn color(b: bool) -> Color {
     match b {
-        true => sdl2::pixels::Color::RGB(0, 200, 0),
+        true => sdl2::pixels::Color::WHITE,
         false => sdl2::pixels::Color::BLACK,
     }
 }
@@ -216,6 +225,15 @@ fn read_screen_state(chip8: &Chip8, screen_state: &mut [u8; 64 * 32 * 3]) -> boo
 fn main() {
     env_logger::init();
 
+    // parse args
+    let opts: Opts = Opts::parse();
+
+    // open ROM
+    let mut f = File::open(opts.filepath).expect("Failed to open the file");
+    let mut program: Vec<u8> = Vec::new();
+    f.read_to_end(&mut program)
+        .expect("failed to read the file");
+
     // init sdl2
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -240,12 +258,7 @@ fn main() {
 
     let mut screen_state = [0_u8; 64 * 32 * 3];
 
-    let mut f = File::open("Life [GV Samways, 1980].ch8").expect("Failed to open the file");
-
-    let mut program: Vec<u8> = Vec::new();
-    f.read_to_end(&mut program)
-        .expect("failed to read the file");
-
+    // start emulator
     let mut chip8 = Chip8::new();
     chip8.load_program(program);
     chip8.run_with_callback(move |chip8| {
